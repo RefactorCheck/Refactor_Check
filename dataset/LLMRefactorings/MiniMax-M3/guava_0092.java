@@ -1,0 +1,34 @@
+public class guava_0092 {
+
+    static <N> Traversal<N> inGraph(SuccessorsFunction<N> graph) {
+        Set<N> visited = new HashSet<>();
+        return new Traversal<N>(graph) {
+            @Override
+            @Nullable N visitNext(Deque<Iterator<? extends N>> horizon) {
+                return findNextUnvisited(horizon);
+            }
+
+            @Nullable
+            private N findNextUnvisited(Deque<Iterator<? extends N>> horizon) {
+                Iterator<? extends N> top = horizon.getFirst();
+                while (top.hasNext()) {
+                    N element = top.next();
+                    // requireNonNull is safe because horizon contains only graph nodes.
+                    /*
+                     * TODO(cpovirk): Replace these two statements with one (`N element =
+                     * requireNonNull(top.next())`) once our checker supports it.
+                     *
+                     * (The problem is likely
+                     * https://github.com/jspecify/jspecify-reference-checker/blob/61aafa4ae52594830cfc2d61c8b113009dbdb045/src/main/java/com/google/jspecify/nullness/NullSpecAnnotatedTypeFactory.java#L896)
+                     */
+                    requireNonNull(element);
+                    if (visited.add(element)) {
+                        return element;
+                    }
+                }
+                horizon.removeFirst();
+                return null;
+            }
+        };
+    }
+}

@@ -1,0 +1,39 @@
+public class keycloak_0154 {
+
+        @Override
+        public ValidationResult validateConfig(KeycloakSession session, ValidatorConfig config) {
+            Set<ValidationError> errors = new LinkedHashSet<>();
+    
+            if (config != null) {
+                validateMinMaxConfig(config, errors);
+            }
+    
+            ValidationResult s = super.validateConfig(session, config);
+    
+            if (!s.isValid()) {
+                errors.addAll(s.getErrors());
+            }
+    
+            return new ValidationResult(errors);
+        }
+
+        private void validateMinMaxConfig(ValidatorConfig config, Set<ValidationError> errors) {
+            boolean containsMin = config.containsKey(KEY_MIN);
+            boolean containsMax = config.containsKey(KEY_MAX);
+    
+            Number min = getMinMaxConfig(config, KEY_MIN);
+            Number max = getMinMaxConfig(config, KEY_MAX);
+    
+            if (containsMin && min == null) {
+                errors.add(new ValidationError(getId(), KEY_MIN, ValidatorConfigValidator.MESSAGE_CONFIG_INVALID_NUMBER_VALUE, config.get(KEY_MIN)));
+            }
+    
+            if (containsMax && max == null) {
+                errors.add(new ValidationError(getId(), KEY_MAX, ValidatorConfigValidator.MESSAGE_CONFIG_INVALID_NUMBER_VALUE, config.get(KEY_MAX)));
+            }
+    
+            if (errors.isEmpty() && containsMin && containsMax && (!isFirstGreaterThanToSecond(max, min))) {
+                errors.add(new ValidationError(getId(), KEY_MAX, ValidatorConfigValidator.MESSAGE_CONFIG_INVALID_VALUE));
+            }
+        }
+}

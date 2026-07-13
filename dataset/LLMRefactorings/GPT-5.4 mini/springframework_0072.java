@@ -1,0 +1,22 @@
+public class springframework_0072 {
+
+    	@SuppressWarnings("removal")
+    	@Bean
+    	public @Nullable HandlerMapping resourceHandlerMapping(
+    			@Qualifier("mvcContentNegotiationManager") ContentNegotiationManager contentNegotiationManager,
+    			@Qualifier("mvcConversionService") FormattingConversionService conversionService,
+    			@Qualifier("mvcResourceUrlProvider") ResourceUrlProvider resourceUrlProvider) {
+    
+    		Assert.state(this.applicationContext != null, "No ApplicationContext set");
+    		Assert.state(this.servletContext != null, "No ServletContext set");
+    
+    
+    		ResourceHandlerRegistry registry = new ResourceHandlerRegistry(this.applicationContext,
+    				this.servletContext, contentNegotiationManager, (getPathMatchConfigurer()).getUrlPathHelper());
+    		addResourceHandlers(registry);
+    
+    		AbstractHandlerMapping mapping = registry.getHandlerMapping();
+    		initHandlerMapping(mapping, conversionService, resourceUrlProvider);
+    		return mapping;
+    	}
+}

@@ -1,0 +1,35 @@
+public class dubbo_0192 {
+
+    private void flush() {
+        Channel ch = null;
+        try {
+            ch = processQueue();
+        } finally {
+            scheduled.set(false);
+            if (!queue.isEmpty()) {
+                scheduleFlush(ch);
+            }
+        }
+    }
+
+    private Channel processQueue() {
+        Channel ch = null;
+        QueuedCommand cmd;
+        int i = 0;
+        boolean flushedOnce = false;
+        while ((cmd = queue.poll()) != null) {
+            ch = cmd.channel();
+            cmd.run(ch);
+            i++;
+            if (i == DEQUE_CHUNK_SIZE) {
+                i = 0;
+                ch.parent().flush();
+                flushedOnce = true;
+            }
+        }
+        if (ch != null && (i != 0 || !flushedOnce)) {
+            ch.parent().flush();
+        }
+        return ch;
+    }
+}

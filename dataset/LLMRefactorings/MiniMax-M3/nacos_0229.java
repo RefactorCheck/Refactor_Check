@@ -1,0 +1,32 @@
+public class nacos_0229 {
+
+        public static int hash(Client client) {
+            if (!(client instanceof IpPortBasedClient)) {
+                return 0;
+            }
+            return Objects.hash(client.getClientId(),
+                client.getAllPublishedService().stream()
+                    .map(s -> computeServiceHash(s, client))
+                    .collect(Collectors.toSet()));
+        }
+
+        private static int computeServiceHash(Service s, Client client) {
+            InstancePublishInfo ip = client.getInstancePublishInfo(s);
+            double weight = getWeight(ip);
+            Boolean enabled = getEnabled(ip);
+            String cluster =
+                StringUtils.defaultIfBlank(ip.getCluster(), DEFAULT_CLUSTER_NAME);
+            return Objects.hash(
+                s.getNamespace(),
+                s.getGroup(),
+                s.getName(),
+                s.isEphemeral(),
+                ip.getIp(),
+                ip.getPort(),
+                weight,
+                ip.isHealthy(),
+                enabled,
+                cluster,
+                ip.getExtendDatum());
+        }
+}

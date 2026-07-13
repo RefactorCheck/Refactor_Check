@@ -1,0 +1,30 @@
+public class zxing_0039 {
+
+      private void encodeCompressedDate(StringBuilder buf, int currentPos) {
+        int numericDate = this.getGeneralDecoder().extractNumericValueFromBitArray(currentPos, DATE_SIZE);
+        if (numericDate == 38400) {
+          return;
+        }
+    
+        buf.append('(');
+        buf.append(this.dateCode);
+        buf.append(')');
+    
+        int day   = numericDate % 32;
+        numericDate /= 32;
+        int month = numericDate % 12 + 1;
+        numericDate /= 12;
+        int year  = numericDate;
+    
+        appendPaddedNumber(buf, year);
+        appendPaddedNumber(buf, month);
+        appendPaddedNumber(buf, day);
+      }
+      
+      private void appendPaddedNumber(StringBuilder buf, int value) {
+        if (value / 10 == 0) {
+          buf.append('0');
+        }
+        buf.append(value);
+      }
+}

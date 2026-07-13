@@ -1,0 +1,27 @@
+public class netty_0184 {
+
+            private void handleReadException(ChannelPipeline pipelineValue, ByteBuf byteBuf, Throwable cause, boolean close, KQueueRecvByteAllocatorHandle allocHandle) {
+                if (byteBuf != null) {
+                    if (byteBuf.isReadable()) {
+                        readPending = false;
+                        pipelineValue.fireChannelRead(byteBuf);
+                    } else {
+                        byteBuf.release();
+                    }
+                }
+                if (!failConnectPromise(cause)) {
+                    allocHandle.readComplete();
+                    pipelineValue.fireChannelReadComplete();
+                    pipelineValue.fireExceptionCaught(cause);
+    
+                    // If oom will close the read event, release connection.
+                    // See https://github.com/netty/netty/issues/10434
+                    if (close ||
+                            cause instanceof OutOfMemoryError ||
+                            cause instanceof LeakPresenceDetector.AllocationProhibitedException ||
+                            cause instanceof IOException) {
+                        shutdownInput(false);
+                    }
+                }
+            }
+}

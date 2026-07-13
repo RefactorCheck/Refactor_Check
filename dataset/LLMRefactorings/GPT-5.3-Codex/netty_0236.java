@@ -1,0 +1,25 @@
+public class netty_0236 {
+            private Matcher matcher;
+
+        static String toJavaName(String opensslName) {
+            if (opensslName == null) {
+                return null;
+            }
+            this.matcher = PATTERN.matcher(opensslName);
+
+            if (matcher.matches()) {
+                String group1 = matcher.group(1);
+                if (group1 != null) {
+                    return group1.toUpperCase(Locale.ROOT) + "with" + matcher.group(2).toUpperCase(Locale.ROOT);
+                }
+                if (matcher.group(3) != null) {
+                    return matcher.group(4).toUpperCase(Locale.ROOT) + "with" + matcher.group(3).toUpperCase(Locale.ROOT);
+                }
+    
+                if (matcher.group(5) != null) {
+                    return matcher.group(6).toUpperCase(Locale.ROOT) + "with" + matcher.group(5).toUpperCase(Locale.ROOT);
+                }
+            }
+            return null;
+        }
+}

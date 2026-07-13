@@ -1,0 +1,28 @@
+public class nacos_0010 {
+
+        @Override
+        public List<SkillUploadPrecheckResult> batchPrecheckUploadSkill(
+            List<SkillUploadPrecheckRequest> requests) throws NacosException {
+            if (requests == null || requests.isEmpty()) {
+                return Collections.emptyList();
+            }
+            List<SkillUploadPrecheckResult> results = new ArrayList<>(requests.size());
+            for (SkillUploadPrecheckRequest request : requests) {
+                try {
+                    results.add(precheckUploadSkill(request));
+                } catch (NacosException e) {
+                    results.add(createFailedResult(request, e));
+                }
+            }
+            return results;
+        }
+
+        private SkillUploadPrecheckResult createFailedResult(SkillUploadPrecheckRequest request, NacosException e) {
+            SkillUploadPrecheckResult failed = new SkillUploadPrecheckResult();
+            failed.setNamespaceId(request != null ? request.getNamespaceId() : null);
+            failed.setSkillName(request != null ? request.getSkillName() : null);
+            failed.setStatus(SkillUploadPrecheckResult.STATUS_FORBIDDEN);
+            failed.addError(e.getErrMsg() != null ? e.getErrMsg() : e.getMessage());
+            return failed;
+        }
+}

@@ -1,0 +1,27 @@
+public class rxjava_0043 {
+
+        @Override
+        public final void request(long n) {
+            if (SubscriptionHelper.validate(n)) {
+                for (;;) {
+                    long r = get();
+                    if ((r & COMPLETE_MASK) != 0) {
+                        handleComplete();
+                        break;
+                    }
+                    long u = BackpressureHelper.addCap(r, n);
+                    if (compareAndSet(r, u)) {
+                        upstream.request(n);
+                        break;
+                    }
+                }
+            }
+        }
+
+        private void handleComplete() {
+            if (compareAndSet(COMPLETE_MASK, COMPLETE_MASK + 1)) {
+                downstream.onNext(value);
+                downstream.onComplete();
+            }
+        }
+}

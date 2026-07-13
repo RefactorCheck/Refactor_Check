@@ -1,0 +1,45 @@
+public class guava_0274 {
+
+      @CanIgnoreReturnValue
+      @J2ktIncompatible
+      @GwtIncompatible // BlockingQueue
+      @SuppressWarnings("GoodTime") // should accept a java.time.Duration
+      public static <E> int drain(
+          BlockingQueue<E> q,
+          Collection<? super E> buffer,
+          int numElements,
+          long timeout,
+          TimeUnit unit)
+          throws InterruptedException {
+        Preconditions.checkNotNull(buffer);
+        /*
+         * This code performs one System.nanoTime() more than necessary, and in return, the time to
+         * execute Queue#drainTo is not added *on top* of waiting for the timeout (which could make
+         * the timeout arbitrarily inaccurate, given a queue that is slow to drain).
+         */
+        long deadline = System.nanoTime() + unit.toNanos(timeout);
+        int added = 0;
+        while (added < numElements) {
+          // we could rely solely on #poll, but #drainTo might be more efficient when there are multiple
+          // elements already available (e.g. LinkedBlockingQueue#drainTo locks only once)
+          added += q.drainTo(buffer, numElements - added);
+          if (added < numElements) { // not enough elements immediately available; will have to poll
+            if (!pollAndAdd(q, buffer, deadline)) {
+              break; // we already waited enough, and there are no more elements in sight
+            }
+            added++;
+          }
+        }
+        return added;
+      }
+
+      private static <E> boolean pollAndAdd(
+          BlockingQueue<E> q, Collection<? super E> buffer, long deadline) throws InterruptedException {
+        E e = q.poll(deadline - System.nanoTime(), NANOSECONDS);
+        if (e == null) {
+          return false;
+        }
+        buffer.add(e);
+        return true;
+      }
+}

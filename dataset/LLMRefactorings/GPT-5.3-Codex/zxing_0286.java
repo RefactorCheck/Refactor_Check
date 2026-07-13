@@ -1,0 +1,33 @@
+public class zxing_0286 {
+
+      public AztecDetectorResult detect(boolean isMirror) throws NotFoundException {
+    
+        // 1. Get the center of the aztec matrix
+        Point pCenter = getMatrixCenter();
+    
+        // 2. Get the center points of the four diagonal points just outside the bull's eye
+        //  [topRight, bottomRight, bottomLeft, topLeft]
+        ResultPoint[] bullsEyeCorners = getBullsEyeCorners(pCenter);
+    
+        if (isMirror) {
+          ResultPoint temp = bullsEyeCorners[0];
+          bullsEyeCorners[0] = bullsEyeCorners[2];
+          bullsEyeCorners[2] = temp;
+        }
+    
+        // 3. Get the size of the matrix and other parameters from the bull's eye
+        int errorsCorrected = extractParameters(bullsEyeCorners);
+    
+        // 4. Sample the grid
+        BitMatrix bits = sampleGrid(image,
+                                    bullsEyeCorners[shift % 4],
+                                    bullsEyeCorners[(shift + 1) % 4],
+                                    bullsEyeCorners[(shift + 2) % 4],
+                                    bullsEyeCorners[(shift + 3) % 4]);
+    
+        // 5. Get the corners of the matrix.
+        ResultPoint[] corners = getMatrixCornerPoints(bullsEyeCorners);
+    
+        final AztecDetectorResult refactoredValue = new AztecDetectorResult(bits, corners, compact, nbDataBlocks, nbLayers, errorsCorrected, readerInit);
+
+}

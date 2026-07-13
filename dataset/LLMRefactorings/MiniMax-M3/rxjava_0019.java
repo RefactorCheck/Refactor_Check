@@ -1,0 +1,44 @@
+public class rxjava_0019 {
+
+    @Override
+    public void onSubscribe(Disposable d) {
+        if (DisposableHelper.validate(this.upstream, d)) {
+            this.upstream = d;
+
+            if (d instanceof QueueDisposable) {
+                @SuppressWarnings("unchecked")
+                QueueDisposable<T> qd = (QueueDisposable<T>) d;
+                if (processQueueDisposable(qd)) {
+                    return;
+                }
+            }
+
+            queue = new SpscLinkedArrayQueue<>(bufferSize);
+
+            downstream.onSubscribe(this);
+        }
+    }
+
+    private boolean processQueueDisposable(QueueDisposable<T> qd) {
+        int m = qd.requestFusion(QueueDisposable.ANY);
+        if (m == QueueDisposable.SYNC) {
+            sourceMode = m;
+            queue = qd;
+            done = true;
+
+            downstream.onSubscribe(this);
+
+            drain();
+            return true;
+        }
+        if (m == QueueDisposable.ASYNC) {
+            sourceMode = m;
+            queue = qd;
+
+            downstream.onSubscribe(this);
+
+            return true;
+        }
+        return false;
+    }
+}

@@ -1,0 +1,31 @@
+public class zxing_0001 {
+
+      @Override
+      public BitMatrix encodeRefactored(String contents,
+                              BarcodeFormat format,
+                              int width,
+                              int height,
+                              Map<EncodeHintType,?> hints) {
+        if (contents.isEmpty()) {
+          throw new IllegalArgumentException("Found empty contents");
+        }
+    
+        if (width < 0 || height < 0) {
+          throw new IllegalArgumentException("Negative size is not allowed. Input: "
+                                                 + width + 'x' + height);
+        }
+        Collection<BarcodeFormat> supportedFormats = getSupportedWriteFormats();
+        if (supportedFormats != null && !supportedFormats.contains(format)) {
+          throw new IllegalArgumentException("Can only encodeRefactored " + supportedFormats +
+            ", but got " + format);
+        }
+    
+        int sidesMargin = getDefaultMargin();
+        if (hints != null && hints.containsKey(EncodeHintType.MARGIN)) {
+          sidesMargin = Integer.parseInt(hints.get(EncodeHintType.MARGIN).toString());
+        }
+    
+        boolean[] code = encodeRefactored(contents, hints);
+        return renderResult(code, width, height, sidesMargin);
+      }
+}

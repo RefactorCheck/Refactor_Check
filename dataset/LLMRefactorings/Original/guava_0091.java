@@ -1,0 +1,26 @@
+public class guava_0091 {
+
+      public static void deleteDirectoryContents(Path path, RecursiveDeleteOption... options)
+          throws IOException {
+        Collection<IOException> exceptions = null; // created lazily if needed
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(path)) {
+          if (stream instanceof SecureDirectoryStream) {
+            SecureDirectoryStream<Path> sds = (SecureDirectoryStream<Path>) stream;
+            exceptions = deleteDirectoryContentsSecure(sds);
+          } else {
+            checkAllowsInsecure(path, options);
+            exceptions = deleteDirectoryContentsInsecure(stream);
+          }
+        } catch (IOException e) {
+          if (exceptions == null) {
+            throw e;
+          } else {
+            exceptions.add(e);
+          }
+        }
+    
+        if (exceptions != null) {
+          throwDeleteFailed(path, exceptions);
+        }
+      }
+}

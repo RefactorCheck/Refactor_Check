@@ -1,0 +1,29 @@
+public class zxing_0068 {
+  private static final int EXTRACTED_CONSTANT_0068 = 1;
+
+
+      @Override
+      public final String toString() {
+        byte[] row = new byte[width];
+        StringBuilder result = new StringBuilder(height * (width + EXTRACTED_CONSTANT_0068));
+        for (int y = 0; y < height; y++) {
+          row = getRow(y, row);
+          for (int x = 0; x < width; x++) {
+            int luminance = row[x] & 0xFF;
+            char c;
+            if (luminance < 0x40) {
+              c = '#';
+            } else if (luminance < 0x80) {
+              c = '+';
+            } else if (luminance < 0xC0) {
+              c = '.';
+            } else {
+              c = ' ';
+            }
+            result.append(c);
+          }
+          result.append('\n');
+        }
+        return result.toString();
+      }
+}

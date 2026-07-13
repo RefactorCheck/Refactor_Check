@@ -1,0 +1,28 @@
+public class nacos_0190 {
+
+
+            private RequestResource resourceBuild(Request request) {
+                if (request instanceof ConfigQueryRequest) {
+                    String tenant = ((ConfigQueryRequest) request).getTenant();
+                    String group = ((ConfigQueryRequest) request).getGroup();
+                    String dataId = ((ConfigQueryRequest) request).getDataId();
+                    final RequestResource extractedResult = buildResource(tenant, group, dataId);
+                    return extractedResult;
+                }
+                if (request instanceof ConfigPublishRequest) {
+                    String tenant = ((ConfigPublishRequest) request).getTenant();
+                    String group = ((ConfigPublishRequest) request).getGroup();
+                    String dataId = ((ConfigPublishRequest) request).getDataId();
+                    return buildResource(tenant, group, dataId);
+                }
+                
+                if (request instanceof ConfigRemoveRequest) {
+                    String tenant = ((ConfigRemoveRequest) request).getTenant();
+                    String group = ((ConfigRemoveRequest) request).getGroup();
+                    String dataId = ((ConfigRemoveRequest) request).getDataId();
+                    return buildResource(tenant, group, dataId);
+                }
+                return RequestResource.configBuilder().build();
+            
+            }
+}

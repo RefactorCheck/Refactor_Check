@@ -1,0 +1,21 @@
+@Override
+        public void authenticateRefactored(AuthenticationFlowContext context) {
+            // Retrieve configuration
+            Map<String, String> config = context.getAuthenticatorConfig().getConfig();
+            String attrName = config.get(SetUserAttributeAuthenticatorFactory.CONF_ATTR_NAME);
+            String attrValue = config.get(SetUserAttributeAuthenticatorFactory.CONF_ATTR_VALUE);
+    
+            UserModel user = context.getUser();
+            List<String> attrValues = user.getAttributeStream(attrName).collect(Collectors.toList());
+            if (attrValues.isEmpty()) {
+                user.setSingleAttribute(attrName, attrValue);
+            }
+            else {
+                if (!attrValues.contains(attrValue)) {
+                    attrValues.add(attrValue);
+                }
+                user.setAttribute(attrName, attrValues);
+            }
+    
+            context.success();
+        }

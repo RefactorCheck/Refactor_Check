@@ -1,0 +1,23 @@
+public class guava_0102 {
+
+        @GuardedBy("this")
+        static @Nullable ReferenceEntry<K, V> removeValueFromChain(
+            ReferenceEntry<K, V> first,
+            ReferenceEntry<K, V> entry,
+            @Nullable K key,
+            int hash,
+            V value,
+            ValueReference<K, V> valueReference,
+            RemovalCause cause) {
+          enqueueNotification(key, hash, value, valueReference.getWeight(), cause);
+          writeQueue.remove(entry);
+          accessQueue.remove(entry);
+    
+          if (valueReference.isLoading()) {
+            valueReference.notifyNewValue(null);
+            return first;
+          } else {
+            return removeEntryFromChain(first, entry);
+          }
+        }
+}

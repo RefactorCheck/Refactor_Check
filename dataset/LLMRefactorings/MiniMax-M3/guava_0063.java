@@ -1,0 +1,49 @@
+public class guava_0063 {
+
+        @Override
+        @SuppressWarnings("CatchingUnchecked") // sneaky checked exception
+        public void run() {
+          boolean stillRunning = true;
+          try {
+            while (true) {
+              ListenerCallQueue.Event<L> nextToRun;
+              Object nextLabel;
+              synchronized (PerListenerQueue.this) {
+                Preconditions.checkState(isThreadScheduled);
+                nextToRun = waitQueue.poll();
+                nextLabel = labelQueue.poll();
+                if (nextToRun == null) {
+                  isThreadScheduled = false;
+                  stillRunning = false;
+                  break;
+                }
+              }
+    
+              // Always run while _not_ holding the lock, to avoid deadlocks.
+              try {
+                nextToRun.call(listener);
+              } catch (Exception e) { // sneaky checked exception
+                logException(e, nextLabel);
+              }
+            }
+          } finally {
+            if (stillRunning) {
+              // An Error is bubbling up. We should mark ourselves as no longer running. That way, if
+              // anyone tries to keep using us, we won't be corrupted.
+              synchronized (PerListenerQueue.this) {
+                isThreadScheduled = false;
+              }
+            }
+          }
+        }
+
+        private void logException(Exception e, Object nextLabel) {
+          // Log it and keep going.
+          logger
+              .get()
+              .log(
+                  Level.SEVERE,
+                  "Exception while executing callback: " + listener + " " + nextLabel,
+                  e);
+        }
+}

@@ -1,0 +1,34 @@
+public class kafka_0206 {
+
+        private synchronized KeyValueIterator<Windowed<Bytes>, byte[]> fetchKeyRangeInternalRefactored(final KeyValueIterator<Windowed<Bytes>, byte[]> underlyingIterator,
+                                                                                             final Bytes keyFrom,
+                                                                                             final Bytes keyTo,
+                                                                                             final long timeFrom,
+                                                                                             final long timeTo,
+                                                                                             final boolean forward) {
+            if (internalContext.cache() == null) {
+                return underlyingIterator;
+            }
+    
+            final PeekingKeyValueIterator<Bytes, LRUCacheEntry> cacheIterator = wrapped().persistent() ?
+                new CacheIteratorWrapper(keyFrom, keyTo, timeFrom, timeTo, forward) :
+                (forward ?
+                    internalContext.cache().range(
+                        cacheName,
+                        keyFrom == null ? null : cacheFunction.cacheKey(keySchema.lowerRange(keyFrom, timeFrom)),
+                        keyTo == null ? null : cacheFunction.cacheKey(keySchema.upperRange(keyTo, timeTo))
+                    ) :
+                    internalContext.cache().reverseRange(
+                        cacheName,
+                        keyFrom == null ? null : cacheFunction.cacheKey(keySchema.lowerRange(keyFrom, timeFrom)),
+                        keyTo == null ? null : cacheFunction.cacheKey(keySchema.upperRange(keyTo, timeTo))
+                    )
+                );
+            final HasNextCondition hasNextCondition = keySchema.hasNextCondition(keyFrom, keyTo, timeFrom, timeTo, forward);
+            final PeekingKeyValueIterator<Bytes, LRUCacheEntry> filteredCacheIterator =
+                new FilteredCacheIterator(cacheIterator, hasNextCondition, cacheFunction);
+    
+            return new MergedSortedCacheWindowStoreKeyValueIterator(
+                filteredCacheIterator, underlyingIterator, bytesSerdes, windowSize, cacheFunction, forward);
+        }
+}

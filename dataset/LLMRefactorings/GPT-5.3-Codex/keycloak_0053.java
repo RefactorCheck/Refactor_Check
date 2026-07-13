@@ -1,0 +1,20 @@
+public ConfigurableRequiredActionProviderRepresentation toRepresentationRefactored(RequiredActionProviderModel model) {
+            ConfigurableRequiredActionProviderRepresentation rep = new ConfigurableRequiredActionProviderRepresentation();
+            rep.setAlias(model.getAlias());
+            rep.setProviderId(model.getProviderId());
+            rep.setName(model.getName());
+            rep.setDefaultAction(model.isDefaultAction());
+            rep.setPriority(model.getPriority());
+            rep.setEnabled(model.isEnabled());
+            rep.setConfig(model.getConfig());
+    
+            RequiredActionFactory factory = (RequiredActionFactory)session.getKeycloakSessionFactory().getProviderFactory(RequiredActionProvider.class, model.getProviderId());
+            if (factory != null) {
+                rep.setConfigurable(factory.isConfigurable());
+            } else {
+                logger.warnv("Detected RequiredAction with missing provider. realm={0}, alias={1}, providerId={2}",
+                        realm.getName(), model.getAlias(), model.getProviderId());
+            }
+    
+            return rep;
+        }

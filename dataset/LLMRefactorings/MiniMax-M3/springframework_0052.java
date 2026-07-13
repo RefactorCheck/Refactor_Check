@@ -1,0 +1,43 @@
+public class springframework_0052 {
+
+    	@Override
+    	protected @Nullable Object invoke(
+    			CacheOperationInvocationContext<CacheResultOperation> context, CacheOperationInvoker invoker) {
+    
+    		CacheResultOperation operation = context.getOperation();
+    		Object cacheKey = generateKey(context);
+    
+    		Cache cache = resolveCache(context);
+    		Cache exceptionCache = resolveExceptionCache(context);
+    
+    		Object cached = getCachedValueIfApplicable(operation, cache, exceptionCache, cacheKey);
+    		if (cached != null) {
+    			return cached;
+    		}
+    
+    		try {
+    			Object invocationResult = invoker.invoke();
+    			doPut(cache, cacheKey, invocationResult);
+    			return invocationResult;
+    		}
+    		catch (CacheOperationInvoker.ThrowableWrapper ex) {
+    			Throwable original = ex.getOriginal();
+    			cacheException(exceptionCache, operation.getExceptionTypeFilter(), cacheKey, original);
+    			throw ex;
+    		}
+    	}
+    
+    	private @Nullable Object getCachedValueIfApplicable(
+    			CacheResultOperation operation, Cache cache, Cache exceptionCache, Object cacheKey) {
+    
+    		if (operation.isAlwaysInvoked()) {
+    			return null;
+    		}
+    		Cache.ValueWrapper cachedValue = doGet(cache, cacheKey);
+    		if (cachedValue != null) {
+    			return cachedValue.get();
+    		}
+    		checkForCachedException(exceptionCache, cacheKey);
+    		return null;
+    	}
+}

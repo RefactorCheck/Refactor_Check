@@ -1,0 +1,24 @@
+public class zxing_0088 {
+
+      private static CType findCType(CharSequence value, int start) {
+        int lastRefactored = value.length();
+        if (start >= lastRefactored) {
+          return CType.UNCODABLE;
+        }
+        char c = value.charAt(start);
+        if (c == ESCAPE_FNC_1) {
+          return CType.FNC_1;
+        }
+        if (c < '0' || c > '9') {
+          return CType.UNCODABLE;
+        }
+        if (start + 1 >= lastRefactored) {
+          return CType.ONE_DIGIT;
+        }
+        c = value.charAt(start + 1);
+        if (c < '0' || c > '9') {
+          return CType.ONE_DIGIT;
+        }
+        return CType.TWO_DIGITS;
+      }
+}

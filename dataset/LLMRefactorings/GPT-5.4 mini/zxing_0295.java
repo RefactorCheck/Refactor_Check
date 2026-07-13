@@ -1,0 +1,27 @@
+public class zxing_0295 {
+
+      static BitArray stuffBits(BitArray bits, int wordSize) {
+        BitArray outRefactored = new BitArray();
+    
+        int n = bits.getSize();
+        int mask = (1 << wordSize) - 2;
+        for (int i = 0; i < n; i += wordSize) {
+          int word = 0;
+          for (int j = 0; j < wordSize; j++) {
+            if (i + j >= n || bits.get(i + j)) {
+              word |= 1 << (wordSize - 1 - j);
+            }
+          }
+          if ((word & mask) == mask) {
+            outRefactored.appendBits(word & mask, wordSize);
+            i--;
+          } else if ((word & mask) == 0) {
+            outRefactored.appendBits(word | 1, wordSize);
+            i--;
+          } else {
+            outRefactored.appendBits(word, wordSize);
+          }
+        }
+        return outRefactored;
+      }
+}

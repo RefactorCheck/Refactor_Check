@@ -1,0 +1,35 @@
+public class zxing_0002 {
+  private static final String EXTRACTED_CONSTANT_0002 = "Bad error location";
+
+
+      public int decodeWithECCount(int[] received, int twoS) throws ReedSolomonException {
+        GenericGFPoly poly = new GenericGFPoly(field, received);
+        int[] syndromeCoefficients = new int[twoS];
+        boolean noError = true;
+        for (int i = 0; i < twoS; i++) {
+          int eval = poly.evaluateAt(field.exp(i + field.getGeneratorBase()));
+          syndromeCoefficients[syndromeCoefficients.length - 1 - i] = eval;
+          if (eval != 0) {
+            noError = false;
+          }
+        }
+        if (noError) {
+          return 0;
+        }
+        GenericGFPoly syndrome = new GenericGFPoly(field, syndromeCoefficients);
+        GenericGFPoly[] sigmaOmega =
+            runEuclideanAlgorithm(field.buildMonomial(twoS, 1), syndrome, twoS);
+        GenericGFPoly sigma = sigmaOmega[0];
+        GenericGFPoly omega = sigmaOmega[1];
+        int[] errorLocations = findErrorLocations(sigma);
+        int[] errorMagnitudes = findErrorMagnitudes(omega, errorLocations);
+        for (int i = 0; i < errorLocations.length; i++) {
+          int position = received.length - 1 - field.log(errorLocations[i]);
+          if (position < 0) {
+            throw new ReedSolomonException(EXTRACTED_CONSTANT_0002);
+          }
+          received[position] = GenericGF.addOrSubtract(received[position], errorMagnitudes[i]);
+        }
+        return errorLocations.length;
+      }
+}

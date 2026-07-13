@@ -1,0 +1,34 @@
+public class arthas_0288 {
+
+            private void loadIndex() throws IOException {
+                JarURLConnection jarConn = (JarURLConnection) uri.toURL().openConnection();
+                String rootEntryName = jarConn.getEntryName() == null ? "" : jarConn.getEntryName();
+                Enumeration<JarEntry> entryEnum = jarConn.getJarFile().entries();
+                while (entryEnum.hasMoreElements()) {
+                    processJarEntry(entryEnum.nextElement(), rootEntryName);
+                }
+            }
+
+            private void processJarEntry(JarEntry jarEntry, String rootEntryName) {
+                String entryName = jarEntry.getName();
+                if (entryName.startsWith(rootEntryName) && entryName.endsWith(CLASS_FILE_EXTENSION)) {
+                    String className = entryName
+                            .substring(0, entryName.length() - CLASS_FILE_EXTENSION.length())
+                            .replace(rootEntryName, "")
+                            .replace("/", ".");
+                    if (className.startsWith(".")) className = className.substring(1);
+                    if (className.equals("package-info")
+                            || className.equals("module-info")
+                            || className.lastIndexOf(".") == -1) {
+                        return;
+                    }
+                    String packageName = className.substring(0, className.lastIndexOf("."));
+                    List<ClassUriWrapper> classes = packages.get(packageName);
+                    if (classes == null) {
+                        classes = new ArrayList<>();
+                        packages.put(packageName, classes);
+                    }
+                    classes.add(new ClassUriWrapper(className, URI.create(jarUri + "!/" + entryName)));
+                }
+            }
+}

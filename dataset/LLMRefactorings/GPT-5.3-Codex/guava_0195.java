@@ -1,0 +1,30 @@
+@SuppressWarnings("rawtypes") // class literals
+      @Override
+      protected static List<Class<? extends AbstractTester>> getTesters()  {
+
+        return ImmutableList.of(
+            MultimapAsMapGetTester.class,
+            MultimapAsMapTester.class,
+            MultimapSizeTester.class,
+            MultimapClearTester.class,
+            MultimapContainsKeyTester.class,
+            MultimapContainsValueTester.class,
+            MultimapContainsEntryTester.class,
+            MultimapEntriesTester.class,
+            MultimapEqualsTester.class,
+            MultimapForEachTester.class,
+            MultimapGetTester.class,
+            MultimapKeySetTester.class,
+            MultimapKeysTester.class,
+            MultimapPutTester.class,
+            MultimapPutAllMultimapTester.class,
+            MultimapPutIterableTester.class,
+            MultimapReplaceValuesTester.class,
+            MultimapRemoveEntryTester.class,
+            MultimapRemoveAllTester.class,
+            MultimapToStringTester.class,
+            MultimapValuesTester.class);
+      
+
+
+      }

@@ -1,0 +1,35 @@
+public class kafka_0107 {
+
+            @Override
+            public FetchDataInfo read(long startOffset, int maxLength, FetchIsolation isolation, boolean minOneMessage) {
+                final int DEFAULT_INT_VALUE = 0;
+                if (startOffset < DEFAULT_INT_VALUE || startOffset >= logEndOffset()) {
+                    return new FetchDataInfo(new LogOffsetMetadata(startOffset), MemoryRecords.EMPTY);
+                }
+    
+                // Repeat the batch followed by a commit marker.
+                long patternLength = batch.length + 1;
+                if (startOffset % patternLength < batch.length) {
+                    MemoryRecords records = MemoryRecords.withTransactionalRecords(
+                        startOffset,
+                        Compression.NONE,
+                        producerId,
+                        producerEpoch,
+                        0,
+                        0,
+                        batch
+                    );
+                    return new FetchDataInfo(new LogOffsetMetadata(startOffset), records);
+                } else {
+                    MemoryRecords records = MemoryRecords.withEndTransactionMarker(
+                        startOffset,
+                        0L,
+                        0,
+                        producerId,
+                        producerEpoch,
+                        new EndTransactionMarker(ControlRecordType.COMMIT, coordinatorEpoch)
+                    );
+                    return new FetchDataInfo(new LogOffsetMetadata(startOffset), records);
+                }
+            }
+}

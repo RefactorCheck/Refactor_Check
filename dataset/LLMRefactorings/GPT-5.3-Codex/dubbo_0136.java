@@ -1,0 +1,45 @@
+public class dubbo_0136 {
+
+    private static final String DEFAULT_VALUE_C07FBC = "false";
+
+        private static boolean ignoreNetworkInterface(NetworkInterface networkInterface) throws SocketException {
+            if (networkInterface == null
+                    || networkInterface.isLoopback()
+                    || networkInterface.isVirtual()
+                    || !networkInterface.isUp()) {
+                return true;
+            }
+            if (Boolean.parseBoolean(SystemPropertyConfigUtils.getSystemProperty(
+                            CommonConstants.DubboProperty.DUBBO_NETWORK_INTERFACE_POINT_TO_POINT_IGNORED, DEFAULT_VALUE_C07FBC))
+                    && networkInterface.isPointToPoint()) {
+                return true;
+            }
+            String ignoredInterfaces = SystemPropertyConfigUtils.getSystemProperty(
+                    CommonConstants.DubboProperty.DUBBO_NETWORK_IGNORED_INTERFACE);
+            String networkInterfaceDisplayName;
+            if (StringUtils.isNotEmpty(ignoredInterfaces)
+                    && StringUtils.isNotEmpty(networkInterfaceDisplayName = networkInterface.getDisplayName())) {
+                for (String ignoredInterface : ignoredInterfaces.split(",")) {
+                    String trimIgnoredInterface = ignoredInterface.trim();
+                    boolean matched = false;
+                    try {
+                        matched = networkInterfaceDisplayName.matches(trimIgnoredInterface);
+                    } catch (PatternSyntaxException e) {
+                        // if trimIgnoredInterface is an invalid regular expression, a PatternSyntaxException will be thrown
+                        // out
+                        logger.warn(
+                                "exception occurred: " + networkInterfaceDisplayName + " matches " + trimIgnoredInterface,
+                                e);
+                    } finally {
+                        if (matched) {
+                            return true;
+                        }
+                        if (networkInterfaceDisplayName.equals(trimIgnoredInterface)) {
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+}

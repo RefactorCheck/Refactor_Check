@@ -1,0 +1,31 @@
+public class kafka_0175 {
+
+    @Override
+    public CreateTopicsRequest build(short version) {
+        if (data.validateOnly() && version == 0)
+            throw new UnsupportedVersionException("validateOnly is not supported in version 0 of " +
+                    "CreateTopicsRequest");
+
+        final List<String> topicsWithDefaults = computeTopicsWithDefaults();
+
+        if (!topicsWithDefaults.isEmpty() && version < 4) {
+            throw new UnsupportedVersionException("Creating topics with default "
+                + "partitions/replication factor are only supported in CreateTopicRequest "
+                + "version 4+. The following topics need values for partitions and replicas: "
+                + topicsWithDefaults);
+        }
+
+        return new CreateTopicsRequest(data, version);
+    }
+
+    private List<String> computeTopicsWithDefaults() {
+        return data.topics()
+            .stream()
+            .filter(topic -> topic.assignments().isEmpty())
+            .filter(topic ->
+                topic.numPartitions() == CreateTopicsRequest.NO_NUM_PARTITIONS
+                    || topic.replicationFactor() == CreateTopicsRequest.NO_REPLICATION_FACTOR)
+            .map(CreatableTopic::name)
+            .collect(Collectors.toList());
+    }
+}

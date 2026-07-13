@@ -1,0 +1,37 @@
+public class keycloak_0289 {
+
+        private AuthOutcome globalLogout() {
+            SamlSession account = sessionStore.getAccount();
+            if (account == null) {
+                return AuthOutcome.NOT_ATTEMPTED;
+            }
+            String requestBindingUrl = deployment.getIDP().getSingleLogoutService().getRequestBindingUrl();
+            SAML2LogoutRequestBuilder logoutBuilder = new SAML2LogoutRequestBuilder()
+                    .assertionExpiration(30)
+                    .issuer(deployment.getEntityID())
+                    .sessionIndex(account.getSessionIndex())
+                    .nameId(account.getPrincipal().getNameID())
+                    .destination(requestBindingUrl);
+            BaseSAML2BindingBuilder binding = new BaseSAML2BindingBuilder();
+            if (deployment.getIDP().getSingleLogoutService().signRequest()) {
+                if (deployment.getSignatureCanonicalizationMethod() != null)
+                    binding.canonicalizationMethod(deployment.getSignatureCanonicalizationMethod());
+                binding.signatureAlgorithm(deployment.getSignatureAlgorithm());
+                binding.signWith(null, deployment.getSigningKeyPair())
+                        .signDocument();
+                // TODO: As part of KEYCLOAK-3810, add KeyID to the SAML document
+                //   <related DocumentBuilder>.addExtension(new KeycloakKeySamlExtensionGenerator(<key ID>));
+            }
+
+            binding.relayState("logout");
+
+            try {
+                SamlUtil.sendSaml(true, facade, requestBindingUrl, binding, logoutBuilder.buildDocument(), deployment.getIDP().getSingleLogoutService().getRequestBinding());
+                sessionStore.setCurrentAction(SamlSessionStore.CurrentAction.LOGGING_OUT);
+            } catch (Exception e) {
+                log.error("Could not send global logout SAML request", e);
+                return AuthOutcome.FAILED;
+            }
+            return AuthOutcome.NOT_ATTEMPTED;
+        }
+}

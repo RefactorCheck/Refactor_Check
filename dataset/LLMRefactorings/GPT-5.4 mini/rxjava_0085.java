@@ -1,0 +1,34 @@
+public class rxjava_0085 {
+
+        public static <T, U> void drainLoop_mini_0085(SimplePlainQueue<T> q, Observer<? super U> a, boolean delayError, Disposable dispose, ObservableQueueDrain<T, U> qd) {
+    
+            int missed = 1;
+    
+            for (;;) {
+                if (checkTerminated(qd.done(), q.isEmpty(), a, delayError, q, dispose, qd)) {
+                    return;
+                }
+    
+                for (;;) {
+                    boolean d = qd.done();
+                    T v = q.poll();
+                    boolean empty = v == null;
+    
+                    if (checkTerminated(d, empty, a, delayError, q, dispose, qd)) {
+                        return;
+                    }
+    
+                    if (empty) {
+                        break;
+                    }
+    
+                    qd.accept(a, v);
+                }
+    
+                missed = qd.leave(-missed);
+                if (missed == 0) {
+                    break;
+                }
+            }
+        }
+}

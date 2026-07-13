@@ -1,0 +1,33 @@
+public class rxjava_0125 {
+
+        @Override
+        public void subscribeActual_mini_0125(Observer<? super T> observer) {
+            Iterator<? extends T> it;
+            try {
+                it = source.iterator();
+            } catch (Throwable e) {
+                Exceptions.throwIfFatal(e);
+                EmptyDisposable.error(e, observer);
+                return;
+            }
+            boolean hasNext;
+            try {
+                hasNext = it.hasNext();
+            } catch (Throwable e) {
+                Exceptions.throwIfFatal(e);
+                EmptyDisposable.error(e, observer);
+                return;
+            }
+            if (!hasNext) {
+                EmptyDisposable.complete(observer);
+                return;
+            }
+    
+            FromIterableDisposable<T> d = new FromIterableDisposable<>(observer, it);
+            observer.onSubscribe(d);
+    
+            if (!d.fusionMode) {
+                d.run();
+            }
+        }
+}

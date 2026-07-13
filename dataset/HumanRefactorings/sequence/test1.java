@@ -1,0 +1,24 @@
+package jface;
+public abstract class ViewerFilter {
+    public abstract boolean change(String viewer, Object parentElement);
+}
+
+package jdt;
+public abstract class AbstractInformationControl {
+    protected class NamePatternFilter extends jface.ViewerFilter {
+        void foo() {
+            Object parentElement = new Object();
+            change("", parentElement);
+        }
+
+        @Override
+        public boolean change(String viewer, Object parentElement) {
+            return this.change(viewer, new Integer(1));
+        }
+
+        // rename this method:
+        public boolean change(String viewer, Integer parentPath) {
+            return false;
+        }
+    }
+}

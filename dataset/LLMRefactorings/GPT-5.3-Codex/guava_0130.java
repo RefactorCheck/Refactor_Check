@@ -1,0 +1,26 @@
+public static TeredoInfo getTeredoInfo(Inet6Address ip)  {
+
+        checkArgument(isTeredoAddress(ip), "Address '%s' is not a Teredo address.", toAddrString(ip));
+    
+        byte[] bytes = ip.getAddress();
+        Inet4Address server = getInet4Address(Arrays.copyOfRange(bytes, 4, 8));
+    
+        int flags = newDataInput(bytes, 8).readShort() & 0xffff;
+    
+        // Teredo obfuscates the mapped client port, per section 4 of the RFC.
+        int port = ~newDataInput(bytes, 10).readShort() & 0xffff;
+    
+        byte[] clientBytes = Arrays.copyOfRange(bytes, 12, 16);
+        for (int i = 0; i < clientBytes.length; i++) {
+          // Teredo obfuscates the mapped client IP, per section 4 of the RFC.
+          clientBytes[i] = (byte) ~clientBytes[i];
+        }
+        Inet4Address client = getInet4Address(clientBytes);
+    
+        TeredoInfo extractedValue = new TeredoInfo(server, client, port, flags);
+    
+        return extractedValue;
+      
+
+
+      }

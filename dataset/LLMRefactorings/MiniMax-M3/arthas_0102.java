@@ -1,0 +1,41 @@
+public class arthas_0102 {
+
+        private void drawMBeanAttributes(CommandProcess process, Map<String, List<MBeanAttributeVO>> mbeanAttributeMap) {
+            for (Map.Entry<String, List<MBeanAttributeVO>> entry : mbeanAttributeMap.entrySet()) {
+                String objectName = entry.getKey();
+                List<MBeanAttributeVO> attributeVOList = entry.getValue();
+    
+                TableElement table = new TableElement().leftCellPadding(1).rightCellPadding(1);
+                table.row(true, "OBJECT_NAME", objectName);
+                table.row(true, label("NAME").style(Decoration.bold.bold()),
+                        label("VALUE").style(Decoration.bold.bold()));
+    
+                for (MBeanAttributeVO attributeVO : attributeVOList) {
+                    String attributeName = attributeVO.getName();
+                    String valueStr = renderValue(attributeVO);
+                    table.row(attributeName, valueStr);
+                }
+                process.write(RenderUtil.render(table, process.width()));
+                process.write("\n");
+            }
+        }
+
+        private String renderValue(MBeanAttributeVO attributeVO) {
+            if (attributeVO.getError() != null) {
+                return RenderUtil.render(new LabelElement(attributeVO.getError()).style(Decoration.bold_off.fg(Color.red)));
+            }
+            Object value = attributeVO.getValue();
+            if (value instanceof String[]) {
+                value = Arrays.asList((String[]) value);
+            } else if (value instanceof Integer[]) {
+                value = Arrays.asList((Integer[]) value);
+            } else if (value instanceof Long[]) {
+                value = Arrays.asList((Long[]) value);
+            } else if (value instanceof int[]) {
+                value = convertArrayToList((int[]) value);
+            } else if (value instanceof long[]) {
+                value = convertArrayToList((long[]) value);
+            }
+            return String.valueOf(value);
+        }
+}

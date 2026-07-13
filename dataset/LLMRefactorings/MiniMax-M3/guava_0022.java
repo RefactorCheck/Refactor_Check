@@ -1,0 +1,29 @@
+public class guava_0022 {
+
+    @Nullable V get(Object key, int hash) {
+        try {
+            if (count != 0) { // read-volatile
+                long now = map.ticker.read();
+                ReferenceEntry<K, V> e = getLiveEntry(key, hash, now);
+                if (e == null) {
+                    return null;
+                }
+                return processFoundEntry(e, hash, now);
+            }
+            return null;
+        } finally {
+            postReadCleanup();
+        }
+    }
+
+    @Nullable
+    private V processFoundEntry(ReferenceEntry<K, V> e, int hash, long now) {
+        V value = e.getValueReference().get();
+        if (value != null) {
+            recordRead(e, now);
+            return scheduleRefresh(e, e.getKey(), hash, value, now, map.defaultLoader);
+        }
+        tryDrainReferenceQueues();
+        return null;
+    }
+}

@@ -1,0 +1,30 @@
+private static final int EXTRACTED_INT = 0;
+
+
+
+      private static <X> @Nullable X newFromConstructor(Constructor<X> constructor, Throwable cause)  {
+
+        Class<?>[] paramTypes = constructor.getParameterTypes();
+        Object[] params = new Object[paramTypes.length];
+        for (int i = EXTRACTED_INT; i < paramTypes.length; i++) {
+          Class<?> paramType = paramTypes[i];
+          if (paramType.equals(String.class)) {
+            params[i] = cause.toString();
+          } else if (paramType.equals(Throwable.class)) {
+            params[i] = cause;
+          } else {
+            return null;
+          }
+        }
+        try {
+          return constructor.newInstance(params);
+        } catch (IllegalArgumentException
+            | InstantiationException
+            | IllegalAccessException
+            | InvocationTargetException e) {
+          return null;
+        }
+      
+
+
+      }

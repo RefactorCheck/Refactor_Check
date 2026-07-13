@@ -1,0 +1,34 @@
+public class keycloak_0065 {
+
+        private static final String DELETE_CLIENT_SESSIONS_BY_USER_SESSIONS = "deleteClientSessionsByUserSessions";
+        private static final String DELETE_USER_SESSIONS = "deleteUserSessions";
+
+        private static int handleResultsToRemove(KeycloakSession session, EntityManager em, String realmId, boolean offline, String eventReason, String detailsForLog, Collection<UserSessionAndUser> expiredSessions) {
+            if (expiredSessions.isEmpty()) {
+                return 0;
+            }
+
+            RealmModel realm = session.realms().getRealm(realmId);
+            session.getContext().setRealm(realm);
+
+            // creates the expiration events and extracts the user session IDs for the delete statement.
+            var sessionIds = expiredSessions.stream()
+                    .peek(sessionAndUser -> createUserSessionDeletedEvent(session, realm, sessionAndUser, eventReason))
+                    .map(UserSessionAndUser::userSessionId)
+                    .toList();
+
+            String offlineStr = offlineToString(offline);
+
+            int cs = em.createNamedQuery(DELETE_CLIENT_SESSIONS_BY_USER_SESSIONS)
+                    .setParameter("userSessionId", sessionIds)
+                    .setParameter("offline", offlineStr)
+                    .executeUpdate();
+
+            int us = em.createNamedQuery(DELETE_USER_SESSIONS)
+                    .setParameter("offline", offlineStr)
+                    .setParameter("userSessionIds", sessionIds)
+                    .executeUpdate();
+            logger.debugf("Removed %d user sessions and %d client sessions in realm '%s' %s", us, cs, realm.getName(), Objects.toString(detailsForLog, ""));
+            return us;
+        }
+}

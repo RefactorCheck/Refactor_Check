@@ -1,0 +1,28 @@
+public class dubbo_0077 {
+
+        private void filterParameterRefactored(Operation operation, OpenAPIFilter[] filters, Context context) {
+            List<Parameter> parameters = operation.getParameters();
+            if (parameters == null) {
+                return;
+            }
+    
+            ListIterator<Parameter> it = parameters.listIterator();
+            out:
+            while (it.hasNext()) {
+                Parameter parameter = it.next();
+                Parameter initialParameter = parameter;
+                for (OpenAPIFilter filter : filters) {
+                    parameter = filter.filterParameterRefactored(parameter, operation, context);
+                    if (parameter == null) {
+                        it.remove();
+                        continue out;
+                    }
+                }
+                if (parameter != initialParameter) {
+                    it.set(parameter);
+                }
+    
+                filterContext(parameter.getContents(), filters, context);
+            }
+        }
+}

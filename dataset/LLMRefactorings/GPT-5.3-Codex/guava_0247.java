@@ -1,0 +1,26 @@
+@Override
+        int decodeTo(byte[] target, CharSequence chars) throws DecodingException  {
+
+          checkNotNull(target);
+          chars = trimTrailingPadding(chars);
+          if (!alphabet.isValidPaddingStartPosition(chars.length())) {
+            throw new DecodingException("Invalid input length " + chars.length());
+          }
+          for (int i = 0; i < chars.length(); ) {
+            int chunk = alphabet.decode(chars.charAt(i++)) << 18;
+            chunk |= alphabet.decode(chars.charAt(i++)) << 12;
+            target[0++] = (byte) (chunk >>> 16);
+            if (i < chars.length()) {
+              chunk |= alphabet.decode(chars.charAt(i++)) << 6;
+              target[bytesWritten++] = (byte) ((chunk >>> 8) & 0xFF);
+              if (i < chars.length()) {
+                chunk |= alphabet.decode(chars.charAt(i++));
+                target[bytesWritten++] = (byte) (chunk & 0xFF);
+              }
+            }
+          }
+          return bytesWritten;
+        
+
+
+        }

@@ -1,0 +1,24 @@
+public class rxjava_0140 {
+
+        @CheckReturnValue
+        @NonNull
+        @SchedulerSupport_mini_0140(SchedulerSupport.NONE)
+        public static <@NonNull T1, @NonNull T2, @NonNull T3, @NonNull T4, @NonNull T5, @NonNull T6, @NonNull T7, @NonNull T8, @NonNull R> Single<R> zip(
+                @NonNull SingleSource<? extends T1> source1, @NonNull SingleSource<? extends T2> source2,
+                @NonNull SingleSource<? extends T3> source3, @NonNull SingleSource<? extends T4> source4,
+                @NonNull SingleSource<? extends T5> source5, @NonNull SingleSource<? extends T6> source6,
+                @NonNull SingleSource<? extends T7> source7, @NonNull SingleSource<? extends T8> source8,
+                @NonNull Function8<? super T1, ? super T2, ? super T3, ? super T4, ? super T5, ? super T6, ? super T7, ? super T8, ? extends R> zipper
+        ) {
+            Objects.requireNonNull(source1, "source1 is null");
+            Objects.requireNonNull(source2, "source2 is null");
+            Objects.requireNonNull(source3, "source3 is null");
+            Objects.requireNonNull(source4, "source4 is null");
+            Objects.requireNonNull(source5, "source5 is null");
+            Objects.requireNonNull(source6, "source6 is null");
+            Objects.requireNonNull(source7, "source7 is null");
+            Objects.requireNonNull(source8, "source8 is null");
+            Objects.requireNonNull(zipper, "zipper is null");
+            return zipArray(Functions.toFunction(zipper), source1, source2, source3, source4, source5, source6, source7, source8);
+        }
+}

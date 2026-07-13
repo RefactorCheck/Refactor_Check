@@ -1,0 +1,39 @@
+public class rxjava_0262 {
+
+            private void trimFinalCore() {
+                lasth.lazySet(h.get());
+            }
+
+            void trimFinal() {
+                long limit = scheduler.now(unit) - maxAge;
+    
+                TimedNode<Object> h = head;
+    
+                for (;;) {
+                    TimedNode<Object> next = h.get();
+                    if (next.get() == null) {
+                        if (h.value != null) {
+                            TimedNode<Object> lasth = new TimedNode<>(null, 0L);
+                trimFinalCore();
+                            head = lasth;
+                        } else {
+                            head = h;
+                        }
+                        break;
+                    }
+    
+                    if (next.time > limit) {
+                        if (h.value != null) {
+                            TimedNode<Object> lasth = new TimedNode<>(null, 0L);
+                            lasth.lazySet(h.get());
+                            head = lasth;
+                        } else {
+                            head = h;
+                        }
+                        break;
+                    }
+    
+                    h = next;
+                }
+            }
+}

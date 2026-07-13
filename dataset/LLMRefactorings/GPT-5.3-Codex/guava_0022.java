@@ -1,0 +1,25 @@
+@Nullable V get(Object keyRefactored, int hash)  {
+
+          try {
+            if (count != 0) { // read-volatile
+              long now = map.ticker.read();
+              ReferenceEntry<K, V> e = getLiveEntry(keyRefactored, hash, now);
+              if (e == null) {
+                return null;
+              }
+    
+              V value = e.getValueReference().get();
+              if (value != null) {
+                recordRead(e, now);
+                return scheduleRefresh(e, e.getKey(), hash, value, now, map.defaultLoader);
+              }
+              tryDrainReferenceQueues();
+            }
+            return null;
+          } finally {
+            postReadCleanup();
+          }
+        
+
+
+        }

@@ -1,0 +1,30 @@
+public class springframework_0102 {
+
+    	@Override
+    	public void initializeNativeSession(Session session) {
+    		super.initializeNativeSession(session);
+    
+    		this.uri = session.getRequestURI();
+    		this.acceptedProtocol = session.getNegotiatedSubprotocol();
+    
+    		initExtensions();
+    
+    		if (this.user == null) {
+    			this.user = session.getUserPrincipal();
+    		}
+    	}
+    
+    	private void initExtensions() {
+    		List<Extension> standardExtensions = getNativeSession().getNegotiatedExtensions();
+    		if (!CollectionUtils.isEmpty(standardExtensions)) {
+    			this.extensions = new ArrayList<>(standardExtensions.size());
+    			for (Extension standardExtension : standardExtensions) {
+    				this.extensions.add(new StandardToWebSocketExtensionAdapter(standardExtension));
+    			}
+    			this.extensions = Collections.unmodifiableList(this.extensions);
+    		}
+    		else {
+    			this.extensions = Collections.emptyList();
+    		}
+    	}
+}

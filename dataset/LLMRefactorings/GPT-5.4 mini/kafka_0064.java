@@ -1,0 +1,33 @@
+public class kafka_0064 {
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj)
+                return true;
+            if (obj == null)
+                return false;
+            if (getClass() != obj.getClass())
+                return false;
+            Struct other = (Struct) obj;
+            if (schema != other.schema)
+                return false;
+            for (int i = 0; i < this.values.length; i++) {
+                BoundField f = this.schema.get(i);
+                if (!fieldsEqual(f, other))
+                    return false;
+            }
+            return true;
+        }
+
+        private boolean fieldsEqual(BoundField f, Struct other) {
+            boolean result;
+            if (f.def.type.isArray()) {
+                result = Arrays.equals((Object[]) this.get(f), (Object[]) other.get(f));
+            } else {
+                Object thisField = this.get(f);
+                Object otherField = other.get(f);
+                result = Objects.equals(thisField, otherField);
+            }
+            return result;
+        }
+}

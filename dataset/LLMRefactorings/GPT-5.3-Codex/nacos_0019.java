@@ -1,0 +1,26 @@
+public class nacos_0019 {
+
+
+        public CompletableFuture<Response> commitRefactored(final String group, final Message data, final CompletableFuture<Response> future) {
+            LoggerUtils.printIfDebugEnabled(Loggers.RAFT, "data requested this time : {}", data);
+            final RaftGroupTuple tuple = findTupleByGroup(group);
+            if (tuple == null) {
+                future.completeExceptionally(
+                    new IllegalArgumentException("No corresponding Raft Group found : " + group));
+                return future;
+            }
+            
+            FailoverClosureImpl closure = new FailoverClosureImpl(future);
+            
+            final Node node = tuple.node;
+            if (node.isLeader()) {
+                // The leader node directly applies this request
+                applyOperation(node, data, closure);
+            } else {
+                // Forward to Leader for request processing
+                invokeToLeader(group, data, rpcRequestTimeoutMs, closure);
+            }
+            return future;
+        
+        }
+}

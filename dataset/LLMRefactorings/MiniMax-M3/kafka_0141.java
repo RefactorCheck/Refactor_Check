@@ -1,0 +1,44 @@
+public class kafka_0141 {
+
+        protected void collectMetric(MetricsEmitter metricsEmitter, MetricKey metricKey, KafkaMetric metric) {
+            Object metricValue;
+    
+            try {
+                metricValue = metric.metricValue();
+            } catch (Exception e) {
+                // If an exception occurs when retrieving value, log warning and continue to process the rest of metrics
+                log.warn("Failed to retrieve metric value {}", metricKey.name(), e);
+                return;
+            }
+    
+            Instant now = Instant.ofEpochMilli(time.milliseconds());
+            if (metric.isMeasurable()) {
+                collectMeasurableMetric(metricKey, metric, metricValue, metricsEmitter, now);
+            } else {
+                collectNonMeasurableMetric(metricKey, metricValue, metricsEmitter, now);
+            }
+        }
+    
+        private void collectMeasurableMetric(MetricKey metricKey, KafkaMetric metric, Object metricValue, MetricsEmitter metricsEmitter, Instant now) {
+            Measurable measurable = metric.measurable();
+            Double value = (Double) metricValue;
+    
+            if (measurable instanceof WindowedCount || measurable instanceof CumulativeSum) {
+                collectSum(metricKey, value, metricsEmitter, now);
+            } else {
+                collectGauge(metricKey, value, metricsEmitter, now);
+            }
+        }
+    
+        private void collectNonMeasurableMetric(MetricKey metricKey, Object metricValue, MetricsEmitter metricsEmitter, Instant now) {
+            // It is non-measurable Gauge metric.
+            // Collect the metric only if its value is a number.
+            if (metricValue instanceof Number) {
+                Number value = (Number) metricValue;
+                collectGauge(metricKey, value, metricsEmitter, now);
+            } else {
+                // skip non-measurable metrics
+                log.debug("Skipping non-measurable gauge metric {}", metricKey.name());
+            }
+        }
+}

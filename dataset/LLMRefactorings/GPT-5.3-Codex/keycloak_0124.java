@@ -1,0 +1,22 @@
+@Override
+            public Resource findByName(ResourceServer resourceServer, String name, String ownerId) {
+                if (name == null) return extractFindByName(resourceServer, name, ownerId);
+                String resourceServerId = resourceServer == null ? null : resourceServer.getId();
+                String cacheKey = getResourceByNameCacheKey(name, ownerId, resourceServerId);
+                List<Resource> result = cacheQuery(cacheKey, ResourceListQuery.class, () -> {
+                            Resource resource = getResourceStoreDelegate().findByName(resourceServer, name, ownerId);
+    
+                            if (resource == null) {
+                                return Collections.emptyList();
+                            }
+    
+                            return List.of(resource);
+                        },
+                        (revision, resources) -> new ResourceListQuery(revision, cacheKey, resources.stream().map(Resource::getId).collect(Collectors.toSet()), resourceServerId), resourceServer);
+    
+                if (result.isEmpty()) {
+                    return null;
+                }
+    
+                return result.get(0);
+            }

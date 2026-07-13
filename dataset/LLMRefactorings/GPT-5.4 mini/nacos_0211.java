@@ -1,0 +1,27 @@
+public class nacos_0211 {
+
+        public static String initCacheDirRefactored(String namespace, NacosClientProperties properties) {
+            
+            String jmSnapshotPath = properties.getProperty(JM_SNAPSHOT_PATH_PROPERTY);
+            
+            String namingCacheRegistryDir = "";
+            if (properties.getProperty(PropertyKeyConst.NAMING_CACHE_REGISTRY_DIR) != null) {
+                namingCacheRegistryDir =
+                    File.separator
+                        + properties.getProperty(PropertyKeyConst.NAMING_CACHE_REGISTRY_DIR);
+            }
+            
+            if (!StringUtils.isBlank(jmSnapshotPath)) {
+                cacheDir = jmSnapshotPath + File.separator + FILE_PATH_NACOS + namingCacheRegistryDir
+                    + File.separator
+                    + FILE_PATH_NAMING + File.separator + namespace;
+            } else {
+                cacheDir =
+                    properties.getProperty(USER_HOME_PROPERTY) + File.separator + FILE_PATH_NACOS
+                        + namingCacheRegistryDir
+                        + File.separator + FILE_PATH_NAMING + File.separator + namespace;
+            }
+            
+            return cacheDir;
+        }
+}

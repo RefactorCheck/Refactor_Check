@@ -1,0 +1,26 @@
+public class keycloak_0161 {
+
+        protected <K> K generateKey(KeycloakSession session, Cache<K, ?> cache, KeyGenerator<K> keyGenerator) {
+            String cacheName = cache.getName();
+    
+            // "wantsLocalKey" is true if route is not attached to the sticky session cookie. Without attached route, We want the key, which will be "owned" by this node.
+            // This is needed due the fact that external loadbalancer will attach route corresponding to our node, which will be the owner of the particular key, hence we
+            // will be able to lookup key locally.
+            boolean wantsLocalKey = !session.getProvider(StickySessionEncoderProvider.class).shouldAttachRoute();
+    
+            if (wantsLocalKey && cache.getCacheConfiguration().clustering().cacheMode().isClustered()) {
+                KeyAffinityService<K> keyAffinityService = getOrCreateKeyAffinityService(cacheName, cache, keyGenerator);
+                return keyAffinityService.getKeyForAddress(cache.getCacheManager().getAddress());
+            } else {
+                return keyGenerator.getKey();
+            }
+        }
+
+        private <K> KeyAffinityService<K> getOrCreateKeyAffinityService(String cacheName, Cache<K, ?> cache, KeyGenerator<K> keyGenerator) {
+            return keyAffinityServices.computeIfAbsent(cacheName, s -> {
+                KeyAffinityService<K> k = createKeyAffinityService(cache, keyGenerator);
+                log.debugf("Registered key affinity service for cache '%s'", cacheName);
+                return k;
+            });
+        }
+}

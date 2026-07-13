@@ -1,0 +1,27 @@
+public class dubbo_0263 {
+
+        protected Artifact createDependencyArtifact(
+            final String groupId,
+            final String artifactId,
+            final String version,
+            final String type,
+            final String classifier
+        ) {
+            final VersionRange versionSpec = parseVersionRange(version);
+            return artifactFactory.createDependencyArtifact(
+                groupId,
+                artifactId,
+                versionSpec,
+                type,
+                classifier,
+                Artifact.SCOPE_RUNTIME);
+        }
+
+        private VersionRange parseVersionRange(final String version) {
+            try {
+                return VersionRange.createFromVersionSpec(version);
+            } catch (final InvalidVersionSpecificationException e) {
+                throw new RuntimeException("Invalid version specification", e);
+            }
+        }
+}

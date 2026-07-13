@@ -1,0 +1,29 @@
+public class dubbo_0236 {
+
+        public static String replaceProperty(String expression, Configuration configuration) {
+            if (StringUtils.isEmpty(expression) || expression.indexOf('$') < 0) {
+                return expression;
+            }
+            Matcher matcher = VARIABLE_PATTERN.matcher(expression);
+            StringBuffer sb = new StringBuffer();
+            while (matcher.find()) {
+                String value = resolvePropertyValue(matcher, configuration);
+                matcher.appendReplacement(sb, Matcher.quoteReplacement(value));
+            }
+            matcher.appendTail(sb);
+            return sb.toString();
+        }
+
+        private static String resolvePropertyValue(Matcher matcher, Configuration configuration) {
+            String key = matcher.group(1);
+            String value = System.getProperty(key);
+            if (value == null && configuration != null) {
+                Object val = configuration.getProperty(key);
+                value = (val != null) ? val.toString() : null;
+            }
+            if (value == null) {
+                value = matcher.group();
+            }
+            return value;
+        }
+}

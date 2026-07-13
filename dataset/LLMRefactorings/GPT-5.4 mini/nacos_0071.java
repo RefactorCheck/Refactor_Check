@@ -1,0 +1,38 @@
+public class nacos_0071 {
+
+        public void registerServiceRefactored(String namespace, String serviceName,
+            List<V1ServicePort> servicePorts, boolean portChanged,
+            SharedIndexInformer<V1Endpoints> endpointInformer) throws NacosException {
+            //TODO defaultnamespace 常量
+            
+            Service service =
+                Service.newService(namespace, Constants.DEFAULT_GROUP, serviceName, false);
+            ServiceManager.getInstance().getSingleton(service);
+            
+            //NotifyCenter.publishEvent(new NamingTraceEvent.RegisterServiceTraceEvent(System.currentTimeMillis(),
+            //        namespace, Constants.DEFAULT_GROUP, serviceName));
+            
+            Set<String> oldIpSet = new HashSet<>();
+            List<? extends Instance> oldInstanceList =
+                instanceOperatorClient.listAllInstances(namespace, serviceName);
+            for (Instance instance : oldInstanceList) {
+                oldIpSet.add(instance.getIp());
+            }
+            Lister<V1Endpoints> endpointLister = new Lister<>(endpointInformer.getIndexer(), namespace);
+            V1Endpoints endpoints = endpointLister.get(serviceName);
+            Set<String> newIpSet = getIpFromEndpoints(endpoints);
+            
+            //unregister deleted instance
+            Set<String> deleteIpSet = new HashSet<>();
+            deleteIpSet.addAll(oldIpSet);
+            deleteIpSet.removeAll(newIpSet);
+            unregisterInstances(deleteIpSet, namespace, serviceName, oldInstanceList);
+            //register added instance
+            Set<String> addIpSet = new HashSet<>();
+            addIpSet.addAll(newIpSet);
+            if (!portChanged) {
+                addIpSet.removeAll(oldIpSet);
+            }
+            registerInstances(addIpSet, namespace, serviceName, servicePorts);
+        }
+}

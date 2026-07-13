@@ -1,0 +1,29 @@
+public class guava_0027 {
+
+      public long size() throws IOException {
+        Optional<Long> sizeIfKnown = sizeIfKnown();
+        if (sizeIfKnown.isPresent()) {
+          return sizeIfKnown.get();
+        }
+    
+        Closer closer = Closer.create();
+        try {
+          InputStream in = closer.register(openStream());
+          return countBySkipping(in);
+        } catch (IOException e) {
+          // skip may not be supported... at any rate, try reading
+        } finally {
+          closer.close();
+        }
+    
+        closer = Closer.create();
+        try {
+          InputStream in = closer.register(openStream());
+          return ByteStreams.exhaust(in);
+        } catch (Throwable e) {
+          throw closer.rethrow(e);
+        } finally {
+          closer.close();
+        }
+      }
+}

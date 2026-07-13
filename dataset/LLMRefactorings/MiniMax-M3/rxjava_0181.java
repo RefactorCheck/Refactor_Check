@@ -1,0 +1,26 @@
+public class rxjava_0181 {
+
+        @Override
+        public void onNext(T t) {
+            if (!isDisposed()) {
+                try {
+                    onNext.accept(t);
+                    handleBackpressure();
+                } catch (Throwable e) {
+                    Exceptions.throwIfFatal(e);
+                    get().cancel();
+                    onError(e);
+                }
+            }
+        }
+
+        private void handleBackpressure() {
+            int c = consumed + 1;
+            if (c == limit) {
+                consumed = 0;
+                get().request(limit);
+            } else {
+                consumed = c;
+            }
+        }
+}

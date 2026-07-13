@@ -1,0 +1,32 @@
+public class netty_0219 {
+
+        @Override
+        public IoRegistration register(IoHandle handle) throws Exception {
+            IoUringIoHandle ioHandle = cast(handle);
+            if (shuttingDown) {
+                throw new IllegalStateException("IoUringIoHandler is shutting down");
+            }
+            DefaultIoUringIoRegistration registration = new DefaultIoUringIoRegistration(executor, ioHandle);
+            allocateRegistrationId(registration, ioHandle);
+            return registration;
+        }
+
+        private void allocateRegistrationId(DefaultIoUringIoRegistration registration, IoUringIoHandle ioHandle) {
+            int startId = nextRegistrationId;
+            for (;;) {
+                int id = nextRegistrationId();
+                DefaultIoUringIoRegistration old = registrations.put(id, registration);
+                if (old != null) {
+                    assert old.handle != registration.handle;
+                    registrations.put(id, old);
+                    if (nextRegistrationId == startId) {
+                        throw new IllegalStateException("registration id space exhausted");
+                    }
+                } else {
+                    registration.setId(id);
+                    ioHandle.registered();
+                    break;
+                }
+            }
+        }
+}

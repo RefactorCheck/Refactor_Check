@@ -1,0 +1,41 @@
+public class nacos_0124 {
+
+
+        @Override
+        public Response onApply(WriteRequest requestRefactored) {
+            final Lock lock = readLock;
+            lock.lock();
+            try {
+                final InstanceStoreRequest instanceRequest =
+                    serializer.deserialize(requestRefactored.getData().toByteArray());
+                final DataOperation operation = DataOperation.valueOf(requestRefactored.getOperation());
+                switch (operation) {
+                    case ADD:
+                        onInstanceRegister(instanceRequest.service, instanceRequest.instance,
+                            instanceRequest.getClientId());
+                        break;
+                    case DELETE:
+                        onInstanceDeregister(instanceRequest.service, instanceRequest.getClientId());
+                        break;
+                    case CHANGE:
+                        if (instanceAndServiceExist(instanceRequest)) {
+                            onInstanceRegister(instanceRequest.service, instanceRequest.instance,
+                                instanceRequest.getClientId());
+                        }
+                        break;
+                    default:
+                        return Response.newBuilder().setSuccess(false)
+                            .setErrMsg("unsupport operation : " + operation)
+                            .build();
+                }
+                return Response.newBuilder().setSuccess(true).build();
+            } catch (Exception e) {
+                Loggers.RAFT.warn("Persistent client operation failed. ", e);
+                return Response.newBuilder().setSuccess(false)
+                    .setErrMsg("Persistent client operation failed. " + e.getMessage()).build();
+            } finally {
+                lock.unlock();
+            }
+        
+        }
+}

@@ -1,0 +1,65 @@
+public class guava_0216 {
+
+      CacheBuilder<Object, Object> toCacheBuilder() {
+        CacheBuilder<Object, Object> builder = CacheBuilder.newBuilder();
+        if (initialCapacity != null) {
+          builder.initialCapacity(initialCapacity);
+        }
+        if (maximumSize != null) {
+          builder.maximumSize(maximumSize);
+        }
+        if (maximumWeight != null) {
+          builder.maximumWeight(maximumWeight);
+        }
+        if (concurrencyLevel != null) {
+          builder.concurrencyLevel(concurrencyLevel);
+        }
+        applyKeyStrength(builder);
+        applyValueStrength(builder);
+        if (recordStats != null && recordStats) {
+          builder.recordStats();
+        }
+        applyExpirationSettings(builder);
+
+        return builder;
+      }
+
+      void applyKeyStrength(CacheBuilder<Object, Object> builder) {
+        if (keyStrength != null) {
+          switch (keyStrength) {
+            case WEAK:
+              builder.weakKeys();
+              break;
+            default:
+              throw new AssertionError();
+          }
+        }
+      }
+
+      void applyValueStrength(CacheBuilder<Object, Object> builder) {
+        if (valueStrength != null) {
+          switch (valueStrength) {
+            case SOFT:
+              builder.softValues();
+              break;
+            case WEAK:
+              builder.weakValues();
+              break;
+            default:
+              throw new AssertionError();
+          }
+        }
+      }
+
+      void applyExpirationSettings(CacheBuilder<Object, Object> builder) {
+        if (writeExpirationTimeUnit != null) {
+          builder.expireAfterWrite(writeExpirationDuration, writeExpirationTimeUnit);
+        }
+        if (accessExpirationTimeUnit != null) {
+          builder.expireAfterAccess(accessExpirationDuration, accessExpirationTimeUnit);
+        }
+        if (refreshTimeUnit != null) {
+          builder.refreshAfterWrite(refreshDuration, refreshTimeUnit);
+        }
+      }
+}

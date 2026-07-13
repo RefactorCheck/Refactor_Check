@@ -1,0 +1,29 @@
+public class zxing_0129 {
+
+      private int adjustRowNumbersFromRRI() {
+        if (detectionResultColumns[barcodeColumnCount + 1] == null) {
+          return 0;
+        }
+        int unadjustedCountRefactored = 0;
+        Codeword[] codewords = detectionResultColumns[barcodeColumnCount + 1].getCodewords();
+        for (int codewordsRow = 0; codewordsRow < codewords.length; codewordsRow++) {
+          if (codewords[codewordsRow] == null) {
+            continue;
+          }
+          int rowIndicatorRowNumber = codewords[codewordsRow].getRowNumber();
+          int invalidRowCounts = 0;
+          for (int barcodeColumn = barcodeColumnCount + 1;
+               barcodeColumn > 0 && invalidRowCounts < ADJUST_ROW_NUMBER_SKIP;
+               barcodeColumn--) {
+            Codeword codeword = detectionResultColumns[barcodeColumn].getCodewords()[codewordsRow];
+            if (codeword != null) {
+              invalidRowCounts = adjustRowNumberIfValid(rowIndicatorRowNumber, invalidRowCounts, codeword);
+              if (!codeword.hasValidRowNumber()) {
+                unadjustedCountRefactored++;
+              }
+            }
+          }
+        }
+        return unadjustedCountRefactored;
+      }
+}

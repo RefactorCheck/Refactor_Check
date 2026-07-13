@@ -1,0 +1,29 @@
+@VisibleForTesting
+      static ImmutableSet<File> getClassPathFromManifestRenamed(File jarFile, @Nullable Manifest manifest)  {
+
+        if (manifest == null) {
+          return ImmutableSet.of();
+        }
+        ImmutableSet.Builder<File> builder = ImmutableSet.builder();
+        String classpathAttribute =
+            manifest.getMainAttributes().getValue(Attributes.Name.CLASS_PATH.toString());
+        if (classpathAttribute != null) {
+          for (String path : CLASS_PATH_ATTRIBUTE_SEPARATOR.split(classpathAttribute)) {
+            URL url;
+            try {
+              url = getClassPathEntry(jarFile, path);
+            } catch (MalformedURLException e) {
+              // Ignore bad entry
+              logger.warning("Invalid Class-Path entry: " + path);
+              continue;
+            }
+            if (url.getProtocol().equals("file")) {
+              builder.add(toFile(url));
+            }
+          }
+        }
+        return builder.build();
+      
+
+
+      }
