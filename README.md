@@ -29,7 +29,7 @@ replicationPackage/
 - `original/`: original HumanRefactorings inputs.
 - `positive/`: behavior-breaking refactorings.
 - `negative/`: behavior-preserving refactorings.
-- `subsequent/`: additional behavior-preserving refactorings derived from the negative cases. Each `testN.java` applies one or two extra refactoring steps after `negative/testN.java`.
+- `sequence/`: additional behavior-preserving refactorings derived from the negative cases. Each `testN.java` applies one or two extra refactoring steps after `negative/testN.java`.
 
 `dataset/LLMRefactor/` contains 3,000 extracted original Java methods and only the three selected model result sets:
 
